@@ -9,8 +9,10 @@ public class HangmanGame {
     private int maxAttempts;
     private int mistakes;
     private char[] guessedState;
+    private GameDifficult difficult;;
 
     public HangmanGame(GameDifficult difficult, AppConfig config) {
+        this.difficult = difficult;
         ArrayList<String> dict = new ArrayList<>(Arrays.asList(config.words()));
 
         guessedWord = GameUtil.getWord(dict)
@@ -72,5 +74,9 @@ public class HangmanGame {
 
     public char[] getGuessedState() {
         return guessedState;
+    }
+
+    public GameDifficult getDifficult() {
+        return difficult;
     }
 }

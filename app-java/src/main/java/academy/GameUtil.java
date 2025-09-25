@@ -11,6 +11,6 @@ public class GameUtil {
         }
 
         Random r = new Random();
-        return Optional.of(words.get(r.nextInt(words.size())));
+        return Optional.ofNullable(words.get(r.nextInt(words.size())));
     }
 }

@@ -20,6 +20,7 @@ public class GameSession {
 
         while (!game.isGameOver()) {
 
+            System.out.println(HangmanArt.getStage(game.getDifficult(), game.getMistakes()));
             System.out.println("Слово: " + game.getState());
             System.out.println("Ошибки: " + game.getMistakes() + "/" + game.getMaxAttempts());
             System.out.print("Введите букву: ");
@@ -42,8 +43,10 @@ public class GameSession {
             System.out.flush();
         }
         if (game.isWordGuessed()) {
+            System.out.println(HangmanArt.getStage(game.getDifficult(), game.getMistakes()));
             System.out.println("Поздравляем!!! Вы угадали слово: " + game.getGuessedWord());
         } else {
+            System.out.println(HangmanArt.getStage(game.getDifficult(), game.getMistakes()));
             System.out.println("Вы проиграли!!! Загаданное слово: " + game.getGuessedWord());
         }
     }

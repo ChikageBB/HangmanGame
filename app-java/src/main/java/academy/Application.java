@@ -68,7 +68,7 @@ public class Application implements Runnable {
             //            System.out.println(result);
         } else {
             LOGGER.atInfo().log("Interactive mode enabled");
-            HangmanGame game = new HangmanGame(GameDifficult.EASY, config);
+            HangmanGame game = new HangmanGame(GameDifficult.HARD, config);
             GameSession session = new GameSession(game);
             session.playInteractive();
         }
