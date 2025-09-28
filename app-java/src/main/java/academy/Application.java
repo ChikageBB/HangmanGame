@@ -2,12 +2,17 @@ package academy;
 
 import static java.util.Objects.nonNull;
 
+import academy.model.GameDifficult;
+import academy.model.GameSession;
+import academy.model.HangmanGame;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import java.io.DataInput;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Scanner;
 import java.util.function.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,12 +70,25 @@ public class Application implements Runnable {
             String res = session.playTest(word, userInput);
 
             System.out.println(res);
-            //            System.out.println(result);
+
         } else {
             LOGGER.atInfo().log("Interactive mode enabled");
-            HangmanGame game = new HangmanGame(GameDifficult.HARD, config);
+            System.out.println("Добро пожаловать в игру Виселица!");
+            System.out.println("Выберете уровень сложности: EASY / NORMAL / HARD");
+
+            Scanner scanner = new Scanner(System.in);
+            GameDifficult difficult = switch (scanner.nextLine().toUpperCase()) {
+                case "EASY" -> GameDifficult.EASY;
+                case "NORMAL" -> GameDifficult.NORMAL;
+                case "HARD" -> GameDifficult.HARD;
+                default -> GameDifficult.NORMAL;
+            };
+
+            HangmanGame game = new HangmanGame(difficult, config);
             GameSession session = new GameSession(game);
             session.playInteractive();
+
+
         }
     }
 

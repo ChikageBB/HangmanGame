@@ -1,4 +1,4 @@
-package academy;
+package academy.model;
 
 public class HangmanArt {
     private static final String[] FULL_STAGES = {

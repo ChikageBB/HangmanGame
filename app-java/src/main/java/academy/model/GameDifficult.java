@@ -1,4 +1,4 @@
-package academy;
+package academy.model;
 
 public enum GameDifficult {
     EASY(10),
