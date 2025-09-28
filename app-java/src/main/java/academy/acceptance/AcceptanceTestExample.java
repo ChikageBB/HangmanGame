@@ -1,4 +1,4 @@
-package academy;
+package academy.acceptance;
 
 import static java.util.Map.entry;
 

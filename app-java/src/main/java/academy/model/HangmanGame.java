@@ -1,7 +1,8 @@
 package academy.model;
 
-import academy.AppConfig;
-import academy.HintDictionary;
+import academy.config.AppConfig;
+import academy.service.HintDictionary;
+import academy.service.WordCategorizer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -14,18 +15,27 @@ public class HangmanGame {
     private char[] guessedState;
     private GameDifficult difficult;
     private String hint;
+    private WordCategory category;
+    private final AppConfig config;
 
-    public HangmanGame(GameDifficult difficult, AppConfig config) {
-        this.difficult = difficult;
+    public HangmanGame(AppConfig config) {
 
+        this.config = config;
         if (config.words().length == 0) {
             throw new IllegalArgumentException("Словарь пуст!");
         }
+    }
 
-        List<String> dict = Arrays.asList(config.words());
+    public void init(GameDifficult difficult, WordCategory category) {
+        this.difficult = difficult;
+        this.category = category;
 
-        if (dict.stream().anyMatch(word -> word == null || word.trim().isEmpty())) {
-            throw new IllegalArgumentException("Некорректное слово в словаре!");
+
+        WordCategorizer wordCategorizer = new WordCategorizer(config.words());
+        List<String> dict = wordCategorizer.getByCategory(category);
+
+        if (dict.isEmpty()) {
+            throw new IllegalArgumentException("Нет слов в выбранной категории: " + category);
         }
 
         this.guessedWord = dict.get(new Random().nextInt(dict.size()));
@@ -34,6 +44,16 @@ public class HangmanGame {
         this.maxAttempts = difficult.getMaxAttempts();
         this.hint = HintDictionary.getHint(guessedWord);
         Arrays.fill(guessedState, '*');
+    }
+
+    public void initForTest(String word, int maxAttempts) {
+        this.guessedWord = word;
+        this.maxAttempts = maxAttempts;
+        this.mistakes = 0;
+        this.guessedState = new char[word.length()];
+        Arrays.fill(guessedState, '*');
+        this.hint = HintDictionary.getHint(word);
+        this.difficult = GameDifficult.EASY; // или другой по умолчанию
     }
 
     public GuessResult guess(char letter) {
@@ -89,6 +109,14 @@ public class HangmanGame {
 
     public String getHint() {
         return hint;
+    }
+
+    public WordCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(WordCategory category) {
+        this.category = category;
     }
 
     public GameDifficult getDifficult() {

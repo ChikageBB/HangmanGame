@@ -1,4 +1,4 @@
-package academy;
+package academy.config;
 
 import java.util.Arrays;
 import java.util.Objects;
