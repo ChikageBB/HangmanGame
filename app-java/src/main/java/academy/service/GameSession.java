@@ -27,41 +27,45 @@ public class GameSession {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Добро пожаловать в игру Виселица!");
-        System.out.println("Выберете уровень сложности: EASY / NORMAL / HARD");
+        while (true) {
+            System.out.println("""
+                1. Начать игру
+                2. Выйти
+                """);
 
-        GameDifficult difficult = switch (scanner.nextLine().toUpperCase()) {
-            case "EASY" -> EASY;
-            case "NORMAL" -> GameDifficult.NORMAL;
-            case "HARD" -> GameDifficult.HARD;
-            default -> {
-                System.out.println("Такой категории не существует. Выбрана случайная сложность");
-                GameDifficult[] values = GameDifficult.values();
-                yield values[new Random().nextInt(values.length)];
+            if (scanner.nextInt() == 1) {
+                clearConsole();
+                System.out.println("""
+                    Выберете уровень сложности:
+                    1. Легкий
+                    2. Нормальный
+                    3. Сложный
+                    """);
+
+                GameDifficult difficult = getDifficult(scanner);
+                clearConsole();
+                System.out.println("Выбрана сложность: " + difficult.name());
+
+                System.out.println("""
+                    Выберете категорию слова:
+                    1. Животные
+                    2. Транспорт
+                    3. Люди
+                    4. Места
+                    5. Искусство
+                    6. Предметы
+                    7. Еда
+                    """);
+                WordCategory category = getCategory(scanner);
+                clearConsole();
+                System.out.println("Выбрана категория: " + category.getDescription());
+
+                game.init(difficult, category);
+                playInteractive();
+            } else {
+                break;
             }
-        };
-        System.out.println("Выбрана сложность: " + difficult.name());
-        clearConsole();
-
-        System.out.println("Выберете категорию слова: ANIMALS / TRANSPORT / PEOPLE / PLACES / ARTS / ITEMS / FOODS ");
-        WordCategory category =  switch (scanner.nextLine().toUpperCase()) {
-            case "ANIMALS" -> ANIMALS;
-            case "TRANSPORT" -> TRANSPORT;
-            case "PEOPLE" -> PEOPLE;
-            case "PLACES" -> PLACES;
-            case "ARTS" -> ARTS;
-            case "ITEMS" -> ITEMS;
-            case "FOODS" -> FOODS;
-            default -> {
-                System.out.println("Такой категории не существует. Выбрана случайная категория");
-                WordCategory[] values = WordCategory.values();
-                yield values[new Random().nextInt(values.length)];
-            }
-        };
-        System.out.println("Выбрана категория: " +  category.name());
-        clearConsole();
-
-        game.init(difficult, category);
-        playInteractive();
+        }
     }
 
     public void playInteractive() {
@@ -80,11 +84,13 @@ public class GameSession {
             String input = scanner.nextLine().trim();
 
             if (input.isEmpty()) {
+                clearConsole();
                 System.out.println("Введите хотя бы одну букву");
                 continue;
             }
 
             if (input.equalsIgnoreCase("!hint")) {
+                clearConsole();
                 System.out.println(game.getHint());
                 continue;
             }
@@ -105,6 +111,36 @@ public class GameSession {
             System.out.println(HangmanArt.getStage(game.getDifficult(), game.getMistakes()));
             System.out.println("Вы проиграли!!! Загаданное слово: " + game.getGuessedWord());
         }
+    }
+
+    private static WordCategory getCategory(Scanner scanner) {
+        return switch (scanner.nextInt()) {
+            case 1 -> ANIMALS;
+            case 2 -> TRANSPORT;
+            case 3 -> PEOPLE;
+            case 4 -> PLACES;
+            case 5 -> ARTS;
+            case 6 -> ITEMS;
+            case 7 -> FOODS;
+            default -> {
+                System.out.println("Такой категории не существует. Выбрана случайная категория");
+                WordCategory[] values = WordCategory.values();
+                yield values[new Random().nextInt(values.length)];
+            }
+        };
+    }
+
+    private static GameDifficult getDifficult(Scanner scanner) {
+        return switch (scanner.nextInt()) {
+            case 1 -> EASY;
+            case 2 -> GameDifficult.NORMAL;
+            case 3 -> GameDifficult.HARD;
+            default -> {
+                System.out.println("Такой категории не существует. Выбрана случайная сложность");
+                GameDifficult[] values = GameDifficult.values();
+                yield values[new Random().nextInt(values.length)];
+            }
+        };
     }
 
     private static void clearConsole() {
