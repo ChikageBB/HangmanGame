@@ -1,9 +1,9 @@
 package academy.model;
 
 public enum GameDifficult {
-    EASY(10),
-    NORMAL(7),
-    HARD(5);
+    EASY(7),
+    NORMAL(5),
+    HARD(3);
 
     private int maxAttempts;
 

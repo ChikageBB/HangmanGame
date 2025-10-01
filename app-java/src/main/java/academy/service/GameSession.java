@@ -5,14 +5,8 @@ import academy.model.*;
 
 import java.util.Random;
 import java.util.Scanner;
-import static academy.model.WordCategory.ANIMALS;
-import static academy.model.WordCategory.ARTS;
-import static academy.model.WordCategory.FOODS;
-import static academy.model.WordCategory.ITEMS;
-import static academy.model.WordCategory.PEOPLE;
-import static academy.model.WordCategory.PLACES;
-import static academy.model.WordCategory.TRANSPORT;
-import static academy.model.GameDifficult.EASY;
+import academy.model.WordCategory;
+import academy.model.GameDifficult;
 
 public class GameSession {
 
@@ -96,32 +90,31 @@ public class GameSession {
             }
 
             char letter = input.charAt(0);
-            GuessResult res = game.guess(letter);
+            GuessResult result = game.guess(letter);
 
-            switch (res) {
+            switch (result) {
                 case INCORRECT -> System.out.println("Неверно!");
                 case CORRECT -> System.out.println("Верно!");
             }
             clearConsole();
         }
+        System.out.println(HangmanArt.getStage(game.getDifficult(), game.getMistakes()));
         if (game.isWordGuessed()) {
-            System.out.println(HangmanArt.getStage(game.getDifficult(), game.getMistakes()));
             System.out.println("Поздравляем!!! Вы угадали слово: " + game.getGuessedWord());
         } else {
-            System.out.println(HangmanArt.getStage(game.getDifficult(), game.getMistakes()));
             System.out.println("Вы проиграли!!! Загаданное слово: " + game.getGuessedWord());
         }
     }
 
     private static WordCategory getCategory(Scanner scanner) {
         return switch (scanner.nextInt()) {
-            case 1 -> ANIMALS;
-            case 2 -> TRANSPORT;
-            case 3 -> PEOPLE;
-            case 4 -> PLACES;
-            case 5 -> ARTS;
-            case 6 -> ITEMS;
-            case 7 -> FOODS;
+            case 1 -> WordCategory.ANIMALS;
+            case 2 -> WordCategory.TRANSPORT;
+            case 3 -> WordCategory.PEOPLE;
+            case 4 -> WordCategory.PLACES;
+            case 5 -> WordCategory.ARTS;
+            case 6 -> WordCategory.ITEMS;
+            case 7 -> WordCategory.FOODS;
             default -> {
                 System.out.println("Такой категории не существует. Выбрана случайная категория");
                 WordCategory[] values = WordCategory.values();
@@ -132,7 +125,7 @@ public class GameSession {
 
     private static GameDifficult getDifficult(Scanner scanner) {
         return switch (scanner.nextInt()) {
-            case 1 -> EASY;
+            case 1 -> GameDifficult.EASY;
             case 2 -> GameDifficult.NORMAL;
             case 3 -> GameDifficult.HARD;
             default -> {

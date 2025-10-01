@@ -13,9 +13,9 @@ public class HangmanGame {
     private int maxAttempts;
     private int mistakes;
     private char[] guessedState;
-    private GameDifficult difficult;
+    private GameDifficult gameDifficult;
     private String hint;
-    private WordCategory category;
+    private WordCategory wordCategory;
     private final AppConfig config;
 
     public HangmanGame(AppConfig config) {
@@ -26,19 +26,19 @@ public class HangmanGame {
         }
     }
 
-    public void init(GameDifficult difficult, WordCategory category) {
-        this.difficult = difficult;
-        this.category = category;
+    public void init(GameDifficult difficult, WordCategory wordCategory) {
+        this.gameDifficult = difficult;
+        this.wordCategory = wordCategory;
 
 
         WordCategorizer wordCategorizer = new WordCategorizer(config.words());
-        List<String> dict = wordCategorizer.getByCategory(category);
+        List<String> dictionary = wordCategorizer.getByCategory(wordCategory);
 
-        if (dict.isEmpty()) {
-            throw new IllegalArgumentException("Нет слов в выбранной категории: " + category);
+        if (dictionary.isEmpty()) {
+            throw new IllegalArgumentException("Нет слов в выбранной категории: " + wordCategory);
         }
 
-        this.guessedWord = dict.get(new Random().nextInt(dict.size()));
+        this.guessedWord = dictionary.get(new Random().nextInt(dictionary.size()));
         this.guessedState = new char[guessedWord.length()];
         this.mistakes = 0;
         this.maxAttempts = difficult.getMaxAttempts();
@@ -53,7 +53,7 @@ public class HangmanGame {
         this.guessedState = new char[word.length()];
         Arrays.fill(guessedState, '*');
         this.hint = HintDictionary.getHint(word);
-        this.difficult = GameDifficult.EASY; // или другой по умолчанию
+        this.gameDifficult = GameDifficult.EASY; // или другой по умолчанию
     }
 
     public GuessResult guess(char letter) {
@@ -83,8 +83,8 @@ public class HangmanGame {
     }
 
     public boolean isWordGuessed() {
-        for (int i = 0; i < guessedState.length; i++) {
-            if (guessedState[i] == '*') {
+        for (char c : guessedState) {
+            if (c == '*') {
                 return false;
             }
         }
@@ -112,14 +112,14 @@ public class HangmanGame {
     }
 
     public WordCategory getCategory() {
-        return category;
+        return wordCategory;
     }
 
     public void setCategory(WordCategory category) {
-        this.category = category;
+        this.wordCategory = category;
     }
 
     public GameDifficult getDifficult() {
-        return difficult;
+        return gameDifficult;
     }
 }
