@@ -1,12 +1,11 @@
 package academy.service;
 
-import academy.ConsoleUtils;
-import academy.InputUtils;
+import academy.util.ConsoleUtils;
+import academy.util.InputUtils;
 import academy.config.AppConfig;
 import academy.model.*;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import academy.model.WordCategory;

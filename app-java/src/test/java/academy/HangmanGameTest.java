@@ -93,14 +93,21 @@ public class HangmanGameTest {
     }
 
     // Проверка: состояние меняется при правильных и неправильных догадках
+
     @Test
-    void testStateChangesOnCorrectAndIncorrectGuesses() {
+    void testStateChangesOnCorrectGuesses() {
         boolean correct = game.guess(game.getGuessedWord().charAt(0));
-        boolean incorrect = game.guess('х');
 
         assertTrue(correct);
+        assertTrue(game.getMistakes() == 0);
+    }
+
+    @Test
+    void testStateChangesOnIncorrectGuesses() {
+        boolean incorrect = game.guess('&');
+
         assertFalse(incorrect);
-        assertTrue(game.getMistakes() > 0);
+        assertTrue(game.getMistakes() > 0 );
     }
 
     @Test

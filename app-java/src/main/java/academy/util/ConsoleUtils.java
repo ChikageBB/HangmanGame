@@ -1,4 +1,4 @@
-package academy;
+package academy.util;
 
 public class ConsoleUtils {
 

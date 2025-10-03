@@ -1,8 +1,6 @@
 package academy.model;
 
-import academy.InputUtils;
 import java.util.Random;
-import java.util.Scanner;
 
 public enum WordCategory {
 
