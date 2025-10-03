@@ -6,6 +6,7 @@ import academy.config.AppConfig;
 import academy.model.*;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Scanner;
 import academy.model.WordCategory;
@@ -53,12 +54,23 @@ public class GameSession {
                     """);
                 WordCategory category = WordCategory.fromNumber(InputUtils.safeReadInt(scanner));
                 ConsoleUtils.clearConsole();
-                System.out.println("Выбрана категория: " + category.getDescription());
 
-                var categoryObj = appConfig.words().stream()
+                var categoryObjOpt = appConfig.words().stream()
                     .filter(c -> c.category().equalsIgnoreCase(category.getDescription()))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Нет слов в выбранной категории: " + category));
+                    .findFirst();
+
+                if (categoryObjOpt.isEmpty()
+                    || categoryObjOpt.get().elements() == null
+                    || categoryObjOpt.get().elements().isEmpty()) {
+
+                    System.out.println("В выбранной категории нет слов. Загружаем случайную категорию...");
+                    var randomCategory = appConfig.words().get(new Random().nextInt(appConfig.words().size()));
+                    categoryObjOpt = Optional.of(randomCategory);
+                }
+
+                System.out.println("Выбрана категория: " + categoryObjOpt.get().category());
+
+                var categoryObj =  categoryObjOpt.get();
 
                 var wordObj = categoryObj.elements().get(new Random().nextInt(categoryObj.elements().size()));
                 HangmanGame game = new HangmanGame(wordObj.word(), wordObj.hint(), difficult);
