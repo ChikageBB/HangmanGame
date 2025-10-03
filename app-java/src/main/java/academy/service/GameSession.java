@@ -1,23 +1,19 @@
 package academy.service;
 
+import academy.ConsoleUtils;
+import academy.InputUtils;
 import academy.config.AppConfig;
 import academy.model.*;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import academy.model.WordCategory;
 import academy.model.GameDifficult;
 
 public class GameSession {
-
-
-    private final HangmanGame game;
-
-    public GameSession(HangmanGame game) {
-        this.game = game;
-    }
-
-    public void startInteractive() {
+    public void startInteractive(AppConfig appConfig) {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Добро пожаловать в игру Виселица!");
@@ -25,19 +21,23 @@ public class GameSession {
             System.out.println("""
                 1. Начать игру
                 2. Выйти
-                """);
 
-            if (scanner.nextInt() == 1) {
-                clearConsole();
+                Введите цифру:
+                """);
+            int menuChoice = InputUtils.safeReadInt(scanner);
+            if (menuChoice == 1) {
+                ConsoleUtils.clearConsole();
                 System.out.println("""
                     Выберете уровень сложности:
                     1. Легкий
                     2. Нормальный
                     3. Сложный
+
+                    Введите цифру:
                     """);
 
-                GameDifficult difficult = getDifficult(scanner);
-                clearConsole();
+                GameDifficult difficult = GameDifficult.fromNumber(InputUtils.safeReadInt(scanner));
+                ConsoleUtils.clearConsole();
                 System.out.println("Выбрана сложность: " + difficult.name());
 
                 System.out.println("""
@@ -49,20 +49,28 @@ public class GameSession {
                     5. Искусство
                     6. Предметы
                     7. Еда
+
+                    Введите цифру:
                     """);
-                WordCategory category = getCategory(scanner);
-                clearConsole();
+                WordCategory category = WordCategory.fromNumber(InputUtils.safeReadInt(scanner));
+                ConsoleUtils.clearConsole();
                 System.out.println("Выбрана категория: " + category.getDescription());
 
-                game.init(difficult, category);
-                playInteractive();
+                var categoryObj = appConfig.words().stream()
+                    .filter(c -> c.category().equalsIgnoreCase(category.getDescription()))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Нет слов в выбранной категории: " + category));
+
+                var wordObj = categoryObj.elements().get(new Random().nextInt(categoryObj.elements().size()));
+                HangmanGame game = new HangmanGame(wordObj.word(), wordObj.hint(), difficult);
+                playInteractive(game);
             } else {
                 break;
             }
         }
     }
 
-    public void playInteractive() {
+    public void playInteractive(HangmanGame game) {
         Scanner scanner = new Scanner(System.in, "CP866");
 
         System.out.println("Угадайте слово. Максимум ошибок: " + game.getMaxAttempts());
@@ -78,25 +86,33 @@ public class GameSession {
             String input = scanner.nextLine().trim();
 
             if (input.isEmpty()) {
-                clearConsole();
+                ConsoleUtils.clearConsole();
                 System.out.println("Введите хотя бы одну букву");
                 continue;
             }
 
             if (input.equalsIgnoreCase("!hint")) {
-                clearConsole();
+                ConsoleUtils.clearConsole();
                 System.out.println(game.getHint());
                 continue;
             }
 
-            char letter = input.charAt(0);
-            GuessResult result = game.guess(letter);
-
-            switch (result) {
-                case INCORRECT -> System.out.println("Неверно!");
-                case CORRECT -> System.out.println("Верно!");
+            if (input.length() > 1) {
+                ConsoleUtils.clearConsole();
+                System.out.println("Введите только одну букву или !hint для подсказки");
+                continue;
             }
-            clearConsole();
+
+            char letter = input.charAt(0);
+            boolean result = game.guess(letter);
+
+            if (result) {
+                System.out.println("Верно!");
+            } else {
+                System.out.println("Неверно");
+            }
+
+            ConsoleUtils.clearConsole();
         }
         System.out.println(HangmanArt.getStage(game.getDifficult(), game.getMistakes()));
         if (game.isWordGuessed()) {
@@ -106,47 +122,31 @@ public class GameSession {
         }
     }
 
-    private static WordCategory getCategory(Scanner scanner) {
-        return switch (scanner.nextInt()) {
-            case 1 -> WordCategory.ANIMALS;
-            case 2 -> WordCategory.TRANSPORT;
-            case 3 -> WordCategory.PEOPLE;
-            case 4 -> WordCategory.PLACES;
-            case 5 -> WordCategory.ARTS;
-            case 6 -> WordCategory.ITEMS;
-            case 7 -> WordCategory.FOODS;
-            default -> {
-                System.out.println("Такой категории не существует. Выбрана случайная категория");
-                WordCategory[] values = WordCategory.values();
-                yield values[new Random().nextInt(values.length)];
-            }
-        };
-    }
-
-    private static GameDifficult getDifficult(Scanner scanner) {
-        return switch (scanner.nextInt()) {
-            case 1 -> GameDifficult.EASY;
-            case 2 -> GameDifficult.NORMAL;
-            case 3 -> GameDifficult.HARD;
-            default -> {
-                System.out.println("Такой категории не существует. Выбрана случайная сложность");
-                GameDifficult[] values = GameDifficult.values();
-                yield values[new Random().nextInt(values.length)];
-            }
-        };
-    }
-
-    private static void clearConsole() {
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
-    }
-
-    public String playTest(String word, String userInput) {
-        HangmanGame testGame = new HangmanGame(new AppConfig(12, new String[]{word}));
-        testGame.initForTest(word, 12);
-        for (char c : userInput.toCharArray()) {
-            testGame.guess(c);
+    public void startNonInteractive(AppConfig appConfig) {
+        if (appConfig.words().size() != 1 || appConfig.words().get(0).elements().size() != 2) {
+            System.out.println("Неверный формат тестовых данных");
+            return;
         }
-        return testGame.getState() + (testGame.isWordGuessed() ? ";POS" : ";NEG");
+
+        var category = appConfig.words().get(0);
+        var wordObj = category.elements().get(0);
+        var userInputObj = category.elements().get(1);
+
+        String word = wordObj.word();
+        String userInput = userInputObj.word();
+
+        char[] guessedState = new  char[word.length()];
+        Arrays.fill(guessedState, '*');
+
+        for (char charUserInput: userInput.toCharArray()) {
+            for (int i = 0; i < word.length(); i++) {
+                if (word.charAt(i) == charUserInput) {
+                    guessedState[i] = charUserInput;
+                }
+            }
+        }
+
+        String state = new String(guessedState);
+        System.out.println(state + (!state.contains("*") ? ";POS" : ";NEG"));
     }
 }

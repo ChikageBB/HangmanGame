@@ -1,10 +1,18 @@
 package academy.config;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 
-public record AppConfig(int fontSize, String[] words) {
+public record AppConfig(
+    int fontSize,
+    List<Category> words
+) {
+
+    public record Category(String category, List<Word> elements) {}
+    public record Word(String word, String hint) {}
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
@@ -14,7 +22,7 @@ public record AppConfig(int fontSize, String[] words) {
 
     @Override
     public int hashCode() {
-        return Objects.hash(fontSize, Arrays.hashCode(words));
+        return Objects.hash(fontSize, words);
     }
 
     @Override

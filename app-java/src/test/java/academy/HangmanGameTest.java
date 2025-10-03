@@ -2,52 +2,63 @@ package academy;
 
 import academy.config.AppConfig;
 import academy.model.GameDifficult;
-import academy.model.GuessResult;
 import academy.model.HangmanGame;
-import academy.model.WordCategory;
-import academy.service.WordCategorizer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class HangmanGameTest {
     private AppConfig configSingle;
     private AppConfig configMulti;
     private HangmanGame game;
-    private WordCategorizer categorizerSingle;
-    private WordCategorizer categorizerMulti;
 
     @BeforeEach
     void setUp() {
-        configSingle = new AppConfig(24, new String[]{"животные:кот"});
-        configMulti = new AppConfig(24, new String[]{
-                "животные:кот",
-                "животные:собака"
-        });
-        game = new HangmanGame(configSingle);
-        game.init(GameDifficult.EASY, WordCategory.ANIMALS);
-        categorizerSingle = new WordCategorizer(configSingle.words());
-        categorizerMulti = new WordCategorizer(configMulti.words());
+        configSingle = new AppConfig(
+            24,
+            List.of(new AppConfig.Category(
+                "животные",
+                List.of(new AppConfig.Word("кот", "Домашнее животное, любит молоко"))
+            ))
+        );
+
+        configMulti = new AppConfig(
+            24,
+            List.of(new AppConfig.Category(
+                "животные",
+                List.of(
+                    new AppConfig.Word("кот", "Домашнее животное, любит молоко"),
+                    new AppConfig.Word("собака", "Лучший друг человека")
+                )
+            ))
+        );
+
+        AppConfig.Word word = configSingle.words().getFirst().elements().getFirst();
+        game = new HangmanGame(word.word(), word.hint(), GameDifficult.EASY);
     }
 
     // Проверка: слово выбирается только из указанной категории
     @Test
     void testWordChosenFromConfig() {
-        HangmanGame game = new HangmanGame(configSingle);
-        game.init(GameDifficult.EASY, WordCategory.ANIMALS);
-
         String chosen = game.getGuessedWord();
-        assertTrue(categorizerMulti.getByCategory(WordCategory.ANIMALS).contains(chosen));
+        assertTrue(configSingle.words().getFirst().elements()
+            .stream()
+            .map(AppConfig.Word::word)
+            .toList()
+            .contains(chosen)
+        );
     }
+
     // Проверка: состояние игры обновляется после угадывания буквы
     @Test
     void testGameStateUpdateAfterGuess() {
         char firstLetter = game.getGuessedWord().charAt(0);
-        GuessResult result = game.guess(firstLetter);
+        boolean result = game.guess(firstLetter);
 
-        assertEquals(GuessResult.CORRECT, result);
+        assertTrue(result);
         assertTrue(game.getState().contains(String.valueOf(firstLetter)));
         assertEquals(game.getMistakes(), 0);
     }
@@ -56,10 +67,10 @@ public class HangmanGameTest {
     @Test
     void testInputCaseInsensitive() {
         char firstLetter = game.getGuessedWord().charAt(0);
-        char upper = Character.toUpperCase(firstLetter);
+        char upperFirstLetter = Character.toUpperCase(firstLetter);
 
-        GuessResult result = game.guess(upper);
-        assertEquals(GuessResult.CORRECT, result);
+        boolean result = game.guess(upperFirstLetter);
+        assertTrue(result);
         assertTrue(game.getState().contains(String.valueOf(Character.toLowerCase(firstLetter))));
     }
 
@@ -77,21 +88,18 @@ public class HangmanGameTest {
     // Проверка: пустое слово в конфиге выбрасывает исключение
     @Test
     void testInvalidWordLengthThrows() {
-        AppConfig badConfig = new AppConfig(24, new String[]{""});
-        HangmanGame badGame = new HangmanGame(badConfig);
-
         assertThrows(IllegalArgumentException.class,
-            () -> badGame.init(GameDifficult.EASY, WordCategory.ANIMALS));
+            () -> new HangmanGame("", "подсказка", GameDifficult.EASY));
     }
 
     // Проверка: состояние меняется при правильных и неправильных догадках
     @Test
     void testStateChangesOnCorrectAndIncorrectGuesses() {
-        GuessResult correct = game.guess(game.getGuessedWord().charAt(0));
-        GuessResult incorrect = game.guess('х');
+        boolean correct = game.guess(game.getGuessedWord().charAt(0));
+        boolean incorrect = game.guess('х');
 
-        assertEquals(GuessResult.CORRECT, correct);
-        assertEquals(GuessResult.INCORRECT, incorrect);
+        assertTrue(correct);
+        assertFalse(incorrect);
         assertTrue(game.getMistakes() > 0);
     }
 

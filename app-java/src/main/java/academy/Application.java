@@ -25,7 +25,11 @@ public class Application implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
     private static final ObjectReader YAML_READER =
             new ObjectMapper(new YAMLFactory()).findAndRegisterModules().reader();
-    private static final Predicate<String[]> IS_TESTING_MODE = words -> nonNull(words) && words.length == 2;
+  //  private static final Predicate<String[]> IS_TESTING_MODE = words -> nonNull(words) && words.length == 2;
+    private static final Predicate<AppConfig> IS_TESTING_MODE =
+      cfg -> cfg.words() != null
+                    && cfg.words().size() == 1
+                    && cfg.words().get(0).elements().size() == 2;
 
     @Option(
             names = {"-s", "--font-size"},
@@ -50,33 +54,56 @@ public class Application implements Runnable {
         AppConfig config = loadConfig();
         LOGGER.atInfo().addKeyValue("config", config).log("Config content");
 
-        if (IS_TESTING_MODE.test(config.words())) {
-            LOGGER.atInfo().log("Non-interactive testing mode enabled");
+//        if (IS_TESTING_MODE.test(config)) {
+//                LOGGER.atInfo().log("Non-interactive testing mode enabled");
+//
+//
+//                var word = config.words().get(0).elements().get(0).word();
+//                var userInput = config.words().get(0).elements().get(1).word();
+//
+//                HangmanGame game = new HangmanGame(config);
+//                GameSession session = new GameSession(game);
+//                String res = session.playTest(word, userInput);
+//
+//                System.out.println(res);
+//
+//        } else {
+//            LOGGER.atInfo().log("Interactive mode enabled");
+//
+//            HangmanGame game = new HangmanGame(config);
+//            GameSession session = new GameSession(game);
+//            session.startInteractive();
+//
+//        }
 
+            GameSession gameSession = new GameSession();
+            if (IS_TESTING_MODE.test(config)) {
+                LOGGER.atInfo().log("Non-interactive testing mode enabled");
+                gameSession.startNonInteractive(config);
+            } else {
+                LOGGER.atInfo().log("Interactive testing mode enabled");
+                gameSession.startInteractive(config);
+            }
 
-            var word = config.words()[0];
-            var userInput = config.words()[1];
-
-            HangmanGame game = new HangmanGame(config);
-            GameSession session = new GameSession(game);
-            String res = session.playTest(word, userInput);
-
-            System.out.println(res);
-
-        } else {
-            LOGGER.atInfo().log("Interactive mode enabled");
-
-            HangmanGame game = new HangmanGame(config);
-            GameSession session = new GameSession(game);
-            session.startInteractive();
-
-        }
     }
 
     private AppConfig loadConfig() {
         // fill with cli options
-        if (configPath == null) return new AppConfig(fontSize, words);
-
+        if (words != null && words.length == 2) {
+            // 🔹 Тестовый режим: два слова из CLI
+            return new AppConfig(
+                fontSize > 0 ? fontSize : 12,
+                java.util.List.of(
+                    new AppConfig.Category(
+                        "test",
+                        java.util.List.of(
+                            new AppConfig.Word(words[0], ""), // загаданное слово
+                            new AppConfig.Word(words[1], "")  // ввод пользователя
+                        )
+                    )
+                )
+            );
+        }
         // use config file if provided
         try {
             return YAML_READER.readValue(configPath, AppConfig.class);

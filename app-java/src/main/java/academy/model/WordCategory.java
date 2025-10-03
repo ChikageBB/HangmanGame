@@ -1,5 +1,9 @@
 package academy.model;
 
+import academy.InputUtils;
+import java.util.Random;
+import java.util.Scanner;
+
 public enum WordCategory {
 
 
@@ -20,6 +24,23 @@ public enum WordCategory {
 
     public String getDescription() {
         return desription;
+    }
+
+    public static WordCategory fromNumber(int number) {
+        return switch (number) {
+            case 1 -> WordCategory.ANIMALS;
+            case 2 -> WordCategory.TRANSPORT;
+            case 3 -> WordCategory.PEOPLE;
+            case 4 -> WordCategory.PLACES;
+            case 5 -> WordCategory.ARTS;
+            case 6 -> WordCategory.ITEMS;
+            case 7 -> WordCategory.FOODS;
+            default -> {
+                System.out.println("Такой категории не существует. Выбрана случайная категория");
+                WordCategory[] values = WordCategory.values();
+                yield values[new Random().nextInt(values.length)];
+            }
+        };
     }
 
 }
